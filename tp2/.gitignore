@@ -1,0 +1,5 @@
+build/*
+tp3/*.h
+
+tp3_exe
+*.rxe
