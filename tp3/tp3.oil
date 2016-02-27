@@ -26,6 +26,9 @@ CPU test {
         STATUS = EXTENDED;
         ERRORHOOK = FALSE;
         PRETASKHOOK = FALSE;
+        POSTTASKHOOK = FALSE;
+        STARTUPHOOK = TRUE;
+        SHUTDOWNHOOK = TRUE;
         APP_SRC = "tp3.c"; 
         APP_NAME = "tp3_exe";
         TRAMPOLINE_BASE_PATH = "/share/tr_m1_esir2/trampoline/";
@@ -49,22 +52,22 @@ CPU test {
     APPMODE std {
     };
 
-    TASK task0 {
-        PRIORITY = 3;
-        AUTOSTART = TRUE { APPMODE = std; };
-        ACTIVATION = 1;
-        SCHEDULE = FULL;
-    }; 
-
-    TASK task1 {
+    TASK sonar {
         PRIORITY = 2;
         AUTOSTART = TRUE { APPMODE = std; };
         ACTIVATION = 1;
         SCHEDULE = FULL;
     }; 
 
-    TASK task2 {
+    TASK touch {
         PRIORITY = 1;
+        AUTOSTART = TRUE { APPMODE = std; };
+        ACTIVATION = 1;
+        SCHEDULE = FULL;
+    }; 
+
+    TASK move {
+        PRIORITY = 3;
         AUTOSTART = TRUE { APPMODE = std; };
         ACTIVATION = 1;
         SCHEDULE = FULL;
@@ -83,13 +86,13 @@ CPU test {
 
       ACTION = ACTIVATETASK
       {
-        TASK = task0;
+        TASK = touch;
       };
 
       /******* Started automaticly ******/
 
       AUTOSTART = TRUE {
-        ALARMTIME = 100;
+        ALARMTIME = 400;
         CYCLETIME = 400;
         APPMODE = std;
       };
@@ -102,13 +105,13 @@ CPU test {
 
       ACTION = ACTIVATETASK
       {
-        TASK = task1;
+        TASK = sonar;
       };
 
       /******* Started automaticly ******/
 
       AUTOSTART = TRUE {
-        ALARMTIME = 100;
+        ALARMTIME = 800;
         CYCLETIME = 800;
         APPMODE = std;
       };
@@ -121,13 +124,13 @@ CPU test {
 
       ACTION = ACTIVATETASK
       {
-        TASK = task2;
+        TASK = move;
       };
 
       /******* Started automaticly ******/
 
       AUTOSTART = TRUE {
-        ALARMTIME = 100;
+        ALARMTIME = 600;
         CYCLETIME = 600;
         APPMODE = std;
       };

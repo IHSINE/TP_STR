@@ -19,6 +19,7 @@
 #include "nxt_motors.h"
 #include "ecrobot_interface.h" 
 #include "ecrobot_private.h"
+#include <stdlib.h>
 
 FUNC(int, OS_APPL_CODE) main(void)
 {   
@@ -28,61 +29,80 @@ FUNC(int, OS_APPL_CODE) main(void)
 }
 
 
-DeclareTask(task0);
-DeclareTask(task1);
-DeclareTask(task2);
+DeclareTask(sonar);
+DeclareTask(touch);
+DeclareTask(move);
 DeclareAlarm(aT0);
 DeclareAlarm(aT1);
 DeclareAlarm(aT2);
 DeclareCounter(SystemCounter);
 DeclareResource(distance);
-TaskType id;
-int next = 0;
-U32 dist;
+U32 dist = 1;
+int in = 0;
+int r = 0;
 
-TASK(task0)
+TASK(touch)
 {
-    // display_string("Tache 0");
-    if(ecrobot_get_touch_sensor(NXT_PORT_S1) > 0){
-        // TODO : proteger la variable dist
+    if(ecrobot_get_touch_sensor(NXT_PORT_S1) == 1 || ecrobot_get_touch_sensor(NXT_PORT_S3) == 1 ){
         GetResource(distance);
         dist = 0;
         ReleaseResource(distance);
     }
     display_string("\n");
     display_update();
+    //SetAbsAlarm(aT1,1,100);
     TerminateTask();
 }
 
-TASK(task1)
+TASK(sonar)
 {
-    ecrobot_init_sonar_sensor(NXT_PORT_S2);
     GetResource(distance);
     dist = ecrobot_get_sonar_sensor(NXT_PORT_S2);
-    display_int(dist,1);
-    display_string("\n");
-    display_update();
-    ecrobot_term_sonar_sensor(NXT_PORT_S2);
     ReleaseResource(distance);
+    /* display_int(dist,4);
+       display_string("\n");
+       display_update();
+       SetAbsAlarm(aT1,1,100);*/
     TerminateTask(); 
 }
 
-TASK(task2)
-{   
-    GetResource(distance);
+TASK(move)
+{
+
     if(dist == 0){
-        ecrobot_set_motor_speed(NXT_PORT_A,0);
-        ecrobot_set_motor_speed(NXT_PORT_B,0);
+        ecrobot_set_motor_speed(NXT_PORT_A, -100);
+        ecrobot_set_motor_speed(NXT_PORT_B, -100);
     }
-    else if(dist > 0){
-        ecrobot_set_motor_speed(NXT_PORT_A,50);
-        ecrobot_set_motor_speed(NXT_PORT_B,50);
+    else if(dist < 50){
+        ecrobot_set_motor_speed(NXT_PORT_A, 50);
+        ecrobot_set_motor_speed(NXT_PORT_B, -50);
+    }else{
+        if (in >= 10) {
+            r = rand() % 100;
+            ecrobot_set_motor_speed(NXT_PORT_A, r);
+            ecrobot_set_motor_speed(NXT_PORT_B, -r);  
+            in = 0;        
+        }
+        else {
+            ecrobot_set_motor_speed(NXT_PORT_A, 50);
+            ecrobot_set_motor_speed(NXT_PORT_B, 50);           
+        }
 
     }
-    ReleaseResource(distance);
+    in++;
+    /*display_goto_xy(0, 0);
+    display_int(in,4);
+    display_update();*/
     TerminateTask();
 }
 
+void StartupHook(void){
+    ecrobot_init_sonar_sensor(NXT_PORT_S2);
+}
+
+void ShutdownHook(void){
+    ecrobot_term_sonar_sensor(NXT_PORT_S2);
+}
 
 ISR(isr_button_start)
 {
